@@ -44,8 +44,8 @@ class WSLFP:
         lfp = wslfp.compute(..., t_gaba_ms=[multiple, gaba, measurements], t_eval_ms=[a, whole, bunch, of, timepoints])
         """
 
-    try:
-        _check_timepoints(t_ampa_ms, t_gaba_ms, t_eval_ms)
+        try:
+            _check_timepoints(t_ampa_ms, t_gaba_ms, t_eval_ms)
 
 
 def compute_ampa_time(t_ampa_ms, tau_ampa):
@@ -53,6 +53,8 @@ def compute_ampa_time(t_ampa_ms, tau_ampa):
     for x in range(len(t_ampa_ms)):
         ampa_time_arr[x] = t_ampa_ms[x] - tau_ampa
     return ampa_time_arr
+
+# use numpy array instead of loop
 
 def compute_gaba_time(t_gaba_ms, tau_gaba):
     gaba_time_arr = []
@@ -70,8 +72,8 @@ def compute_ampa(ampa:np.ndarray, t_ampa_ms, tau_ampa):
 def compute_gaba(gaba:np.ndarray, t_gaba_ms, tau_gaba):
     gaba_arr = []
     time = compute_gaba_time(t_gaba_ms, tau_gaba)
-    for x in range(len(time)):
-        gaba_arr[x] = gaba[x] * time[x]
+    for x in range(len(time)): #no for loop
+        gaba_arr[x] = gaba[x] * time[x] #should be gaba at that time
     return gaba_arr
 
 def sum_ampa(ampa, t_ampa_ms, tau_ampa):
@@ -88,7 +90,7 @@ def sum_gaba(gaba, t_gaba_ms, tau_gaba):
         gaba_sum += gaba_curr
     return gaba_sum
 
-def _check_timepoints(t_ampa_ms, t_gaba_ms, t_eval_ms):
+def _check_timepoints(t_ampa_ms, t_gaba_ms, tau_ampa, tau_gaba, t_eval_ms):
         # need exact timepoints if just one measurement is given. Otherwise, let interpolation throw an error
         # when out of range
         # check t_ampa_ms: ranging from at least tau_ampa ms before the first eval point
@@ -104,12 +106,12 @@ def _check_timepoints(t_ampa_ms, t_gaba_ms, t_eval_ms):
                     raise Exception("ampa not valid")
             elif t < np.min(t_ampa_ms) or t > np.max(t_gaba_ms):
                 raise Exception("ampa not valid")
-            else:
-                t_ampa_chosen = interp1d(t_ampa_ms, t_eval_ms, kind = int);
-                if t > t_ampa_chosen:
-                    raise Exception("ampa not valid");
+            #else:
+                #t_ampa_chosen = interp1d(t_ampa_ms, t_eval_ms, kind = int)
+                #if t > t_ampa_chosen:
+                    #raise Exception("ampa not valid")
 
-            if t - 6 < np.min(t_gaba_ms) or t - 6 > np.max(t_gaba_ms):
+            if t - tau_gaba < np.min(t_gaba_ms) or t - tau_gaba > np.max(t_gaba_ms):
                 raise Exception("gaba not valid")
  
          
